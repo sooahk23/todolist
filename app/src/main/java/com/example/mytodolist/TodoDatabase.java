@@ -17,9 +17,9 @@ public class TodoDatabase {
     private static final int DATABASE_VERSION = 1;
 
     public static final String TABLE_NAME = "todo";
-    public static final String TODO_ID = "_id";
-    public static final String TODO_TEXT = "text";
-    public static final String TODO_STATUS = "status";
+    public static final String TODO_ID = "_ID";
+    public static final String TODO_TEXT = "TEXT";
+    public static final String TODO_STATUS = "STATUS";
 
     public static final String[] ALL_COLUMNS = {TODO_ID, TODO_TEXT, TODO_STATUS};
 
@@ -113,7 +113,26 @@ public class TodoDatabase {
 
     public void insertRecord(String text, String status) {
         try {
+            Log.d(TAG, "insert into " + TABLE_NAME + "(TEXT, STATUS) values ('" + text + "', '" + status + "');");
             db.execSQL( "insert into " + TABLE_NAME + "(TEXT, STATUS) values ('" + text + "', '" + status + "');" );
+        } catch(Exception ex) {
+            Log.e(TAG, "Exception in executing insert SQL.", ex);
+        }
+    }
+
+    public void updateRecord(String todoId, String text, String status) {
+        try {
+            db.execSQL( "update " + TABLE_NAME + "set " + TODO_TEXT + " = " + text + " and "
+                    + TODO_STATUS + " = " + status
+                    + " where " + TODO_ID + " = " + todoId);
+        } catch(Exception ex) {
+            Log.e(TAG, "Exception in executing insert SQL.", ex);
+        }
+    }
+
+    public void deleteRecord(String todoId) {
+        try {
+            db.execSQL( "delete from " + TABLE_NAME + "where " + TODO_ID + " = " + todoId);
         } catch(Exception ex) {
             Log.e(TAG, "Exception in executing insert SQL.", ex);
         }

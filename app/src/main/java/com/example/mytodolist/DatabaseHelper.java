@@ -9,9 +9,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
 
     public static final String TABLE_NAME = "todo";
-    public static final String TODO_ID = "_id";
-    public static final String TODO_TEXT = "text";
-    public static final String TODO_STATUS = "status";
+    public static final String TODO_ID = "_ID";
+    public static final String TODO_TEXT = "TEXT";
+    public static final String TODO_STATUS = "STATUS";
 
     public static final String[] ALL_COLUMNS = {TODO_ID, TODO_TEXT, TODO_STATUS};
 

@@ -51,9 +51,9 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         TodoAdapter adapter = new TodoAdapter();
 
-        adapter.addItem(new Todo("간단한 TODO 리스트", "NOT_STARTED"));
-        adapter.addItem(new Todo("3가지 상태로 체크", "NOT_STARTED"));
-        adapter.addItem(new Todo("쉽게 활용해요!", "NOT_STARTED"));
+//        adapter.addItem(new Todo("간단한 TODO 리스트", "NOT_STARTED"));
+//        adapter.addItem(new Todo("3가지 상태로 체크", "NOT_STARTED"));
+//        adapter.addItem(new Todo("쉽게 활용해요!", "NOT_STARTED"));
 
         recyclerView.setAdapter(adapter);
 
