@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -16,13 +17,32 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
+    TodoDatabase database;
+
     EditText editText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Open Database
+        if (database != null) {
+            database.close();
+            database = null;
+        }
+
+        database = TodoDatabase.getInstance(this);
+        boolean isOpen = database.open();
+        if (isOpen) {
+            Log.d(TAG, "Todo database is opened.");
+        } else {
+            Log.d(TAG, "Todo database is not opened.");
+        }
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         editText = findViewById(R.id.editText);
@@ -36,6 +56,10 @@ public class MainActivity extends AppCompatActivity {
         adapter.addItem(new Todo("쉽게 활용해요!", "NOT_STARTED"));
 
         recyclerView.setAdapter(adapter);
+
+        // 저장된 투두리스트 불러오기
+        ArrayList<Todo> result = database.selectAll();
+        adapter.setItems(result);
 
         // TODO List 목록 클릭시 이벤트
         // 텍스트 부분 클릭시 텍스트 수정
@@ -56,8 +80,10 @@ public class MainActivity extends AppCompatActivity {
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                adapter.addItem(new Todo(editText.getText().toString(), "NOT_STARTED"));
+                Todo newItem = new Todo(editText.getText().toString(), "NOT_STARTED");
+                adapter.addItem(newItem);
                 adapter.notifyDataSetChanged();
+                database.insertRecord(newItem.getText(), newItem.getStatus());
                 editText.setText("");
 
             }
