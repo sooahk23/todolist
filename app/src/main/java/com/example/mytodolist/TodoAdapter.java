@@ -86,8 +86,17 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder>  i
 
         public void setItem(Todo item){
             todoText.setText(item.getText());
-            String statusHoleder = item.getStatus();
+            String notStatus = item.getStatus();
 //            todoStatus.setImageIcon();
+//            switch (notStatus) {
+//                case "NOT_STARTED":
+//                    todoStatus.setImageResource(R.drawable.status_not_started);
+//                    break;
+//                case "DONE":
+//                    todoStatus.setImageResource(R.drawable.status_done);
+//                    break;
+//
+//            }
         }
     }
 }
