@@ -85,8 +85,8 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder>  i
         }
 
         public void setItem(Todo item){
-            todoText.setText(item.getTodo());
-            Status statusHoleder = item.getStatus();
+            todoText.setText(item.getText());
+            String statusHoleder = item.getStatus();
 //            todoStatus.setImageIcon();
         }
     }

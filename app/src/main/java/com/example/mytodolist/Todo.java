@@ -2,27 +2,27 @@ package com.example.mytodolist;
 
 enum Status{DONE, DOING, NOT_STARTED}
 public class Todo {
-    String todo;
-    Status status;
+    String text;
+    String status;
 
-    public Todo(String todo, Status status) {
-        this.todo = todo;
+    public Todo(String text, String status) {
+        this.text = text;
         this.status = status;
     }
 
-    public String getTodo() {
-        return todo;
+    public String getText() {
+        return text;
     }
 
-    public void setTodo(String todo) {
-        this.todo = todo;
+    public void setText(String text) {
+        this.text = text;
     }
 
-    public Status getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 }

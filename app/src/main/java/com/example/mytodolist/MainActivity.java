@@ -4,7 +4,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.ContentValues;
+import android.database.Cursor;
 import android.graphics.Paint;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -28,9 +31,9 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         TodoAdapter adapter = new TodoAdapter();
 
-        adapter.addItem(new Todo("간단한 TODO 리스트", Status.NOT_STARTED));
-        adapter.addItem(new Todo("3가지 상태로 체크", Status.NOT_STARTED));
-        adapter.addItem(new Todo("쉽게 활용해요!", Status.NOT_STARTED));
+        adapter.addItem(new Todo("간단한 TODO 리스트", "NOT_STARTED"));
+        adapter.addItem(new Todo("3가지 상태로 체크", "NOT_STARTED"));
+        adapter.addItem(new Todo("쉽게 활용해요!", "NOT_STARTED"));
 
         recyclerView.setAdapter(adapter);
 
@@ -41,18 +44,19 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(TodoAdapter.ViewHolder holder, View view, int position) {
                 Todo item = adapter.getItem(position);
-                Toast.makeText(getApplicationContext(), "Click! " + item.getTodo(),
+                Toast.makeText(getApplicationContext(), "Click! " + item.getText(),
                         Toast.LENGTH_SHORT).show();
             }
         });
 
         // TODO List 추가 버튼 클릭시
         // Input 입력 되고 텍스트 초기화
+        // TODO 데이터베이스에 추가
         Button addBtn = findViewById(R.id.addBtn);
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                adapter.addItem(new Todo(editText.getText().toString(), Status.NOT_STARTED));
+                adapter.addItem(new Todo(editText.getText().toString(), "NOT_STARTED"));
                 adapter.notifyDataSetChanged();
                 editText.setText("");
 
