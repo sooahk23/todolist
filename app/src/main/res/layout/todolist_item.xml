@@ -6,12 +6,23 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/todoParent"
         android:orientation="horizontal">
+
         <EditText
+            android:id="@+id/todoEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:hint="@string/todoHint"
+            android:textSize="20sp" />
+
+        <TextView
             android:id="@+id/todoText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@android:color/transparent"/>
+            android:background="@android:color/transparent"
+            android:textSize="20sp" />
         <ImageView
             android:id="@+id/todoStatus"
             android:layout_width="wrap_content"

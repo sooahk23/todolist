@@ -18,7 +18,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "(" +
             TODO_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
             TODO_TEXT + " TEXT, " +
-            TODO_STATUS + " INTEGER" +
+            TODO_STATUS + " TEXT" +
             ")";
 
     public DatabaseHelper(Context context){

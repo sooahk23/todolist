@@ -9,8 +9,11 @@ import android.database.Cursor;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -61,15 +64,95 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<Todo> result = database.selectAll();
         adapter.setItems(result);
 
-        // TODO List 목록 클릭시 이벤트
-        // 텍스트 부분 클릭시 텍스트 수정
-        // 아이콘 클릭시 상태 변경
-        adapter.setOnItemClickListener(new OnTodoItemClickListener() {
+        // List 목록 클릭시 이벤트
+        // 길게 누르면 삭제하기 팝업 띄우기
+        adapter.setOnItemClickListener(new TodoAdapter.OnTodoItemLongClickListener() {
             @Override
-            public void onItemClick(TodoAdapter.ViewHolder holder, View view, int position) {
+            public void onItemLongClick(TodoAdapter.ViewHolder holder, View view, int position) {
                 Todo item = adapter.getItem(position);
+                //TODO: 삭제하기 팝업 띄우기
                 Toast.makeText(getApplicationContext(), "Click! " + item.getText(),
                         Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // 아이콘 클릭시 상태 변경
+        adapter.setOnCheckClickListener(new TodoAdapter.OnTodoCheckClickListener() {
+            @Override
+            public void onCheckClick(TodoAdapter.ViewHolder holder, View view, int position) {
+                Todo item = adapter.getItem(position);
+                switch (item.status) {
+                    case "NOT_STARTED":
+                        item.status = "DONE";
+                        break;
+                    case "DONE":
+                        item.status = "NOT_STARTED";
+                        break;
+                }
+                adapter.setItem(position, item);
+                adapter.notifyDataSetChanged();
+                database.updateRecord(item.getId(), item.text, item.status);
+            }
+        });
+
+        // 텍스트 부분 클릭시 텍스트 수정
+        adapter.setOnTextClickListener(new TodoAdapter.OnTodoTextClickListener() {
+            @Override
+            public void onTextClick(TodoAdapter.ViewHolder holder, View view, int position) {
+                Todo item = adapter.getItem(position);
+//                Log.d(TAG, "HELLO!!!!!! " + item.id + item.status + item.text);
+                if (item.status.equals("DONE")) {
+//                    Log.d(TAG, "HELLO!!!!!! " + item.id + item.status + item.text);
+                    return;
+                }
+                // EditText로 변경
+                holder.todoText.setVisibility(View.GONE);
+                holder.todoEdit.setText(item.text);
+                holder.todoEdit.setVisibility(View.VISIBLE);
+//                holder.todoStatus.setClickable(false);
+
+                //
+                holder.todoEdit.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    }
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    }
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        item.text = s.toString();
+                        adapter.setItem(position, item);
+                        adapter.notifyDataSetChanged();
+                        database.updateRecord(item.getId(), item.text, item.status);
+                    }
+                });
+
+//                holder.todoParent.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        Log.d(TAG, "here4");
+//                        InputMethodManager manager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+//                        manager.hideSoftInputFromWindow(holder.todoEdit.getWindowToken(), 0);
+//                        String str = holder.todoEdit.getText().toString().isEmpty() ? "" : holder.todoEdit.getText().toString();
+//                        holder.todoText.setVisibility(View.VISIBLE);
+//                        holder.todoText.setText(str);
+//                        holder.todoEdit.setVisibility(View.GONE);
+//                    }
+//                });
+            }
+        });
+
+        adapter.setOnOutClickListener(new TodoAdapter.OnTodoOutClickListener() {
+            @Override
+            public void onOutClick(TodoAdapter.ViewHolder holder, View view, int position) {
+                Log.d(TAG, "here4");
+                InputMethodManager manager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                manager.hideSoftInputFromWindow(holder.todoEdit.getWindowToken(), 0);
+                String str = holder.todoEdit.getText().toString().isEmpty() ? "" : holder.todoEdit.getText().toString();
+                holder.todoText.setVisibility(View.VISIBLE);
+                holder.todoText.setText(str);
+                holder.todoEdit.setVisibility(View.GONE);
             }
         });
 
@@ -80,12 +163,12 @@ public class MainActivity extends AppCompatActivity {
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Todo newItem = new Todo(editText.getText().toString(), "NOT_STARTED");
+                long itemId = database.insertRecord(editText.getText().toString(), "NOT_STARTED");
+                Todo newItem = new Todo(itemId, editText.getText().toString(), "NOT_STARTED");
+//                Log.d(TAG, "printing item.." + newItem.id+ newItem.text + newItem.status);
                 adapter.addItem(newItem);
                 adapter.notifyDataSetChanged();
-                database.insertRecord(newItem.getText(), newItem.getStatus());
                 editText.setText("");
-
             }
         });
     }

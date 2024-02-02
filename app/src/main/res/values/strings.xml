@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MyTodoList</string>
+    <string name="todoHint">할 일을 입력하세요.</string>
 </resources>

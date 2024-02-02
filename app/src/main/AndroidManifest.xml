@@ -22,12 +22,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <provider
-            android:authorities="com.example.mytodolist"
-            android:name=".TodoProvider"
-            android:exported="true"
-            android:readPermission="com.example.mytodolist.READ_DATABASE"
-            android:writePermission="com.example.mytodolist.WRITE_DATABASE"/>
+<!--        <provider-->
+<!--            android:authorities="com.example.mytodolist"-->
+<!--            android:name=".TodoProvider"-->
+<!--            android:exported="true"-->
+<!--            android:readPermission="com.example.mytodolist.READ_DATABASE"-->
+<!--            android:writePermission="com.example.mytodolist.WRITE_DATABASE"/>-->
     </application>
 
 </manifest>

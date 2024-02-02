@@ -2,12 +2,22 @@ package com.example.mytodolist;
 
 enum Status{DONE, DOING, NOT_STARTED}
 public class Todo {
+    long id;
     String text;
     String status;
 
-    public Todo(String text, String status) {
+    public Todo(long id, String text, String status) {
+        this.id = id;
         this.text = text;
         this.status = status;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getText() {

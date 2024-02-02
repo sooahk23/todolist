@@ -1,5 +1,6 @@
 package com.example.mytodolist;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -111,26 +112,37 @@ public class TodoDatabase {
         return true;
     }
 
-    public void insertRecord(String text, String status) {
+    public long insertRecord(String text, String status) {
         try {
             Log.d(TAG, "insert into " + TABLE_NAME + "(TEXT, STATUS) values ('" + text + "', '" + status + "');");
-            db.execSQL( "insert into " + TABLE_NAME + "(TEXT, STATUS) values ('" + text + "', '" + status + "');" );
+            ContentValues cv = new ContentValues();
+            cv.put(TODO_TEXT, text);
+            cv.put(TODO_STATUS, status);
+            long id = db.insert(TABLE_NAME, null, cv);
+//            db.execSQL( "insert into " + TABLE_NAME + "(TEXT, STATUS) values ('" + text + "', '" + status + "');" );
+            return id;
         } catch(Exception ex) {
             Log.e(TAG, "Exception in executing insert SQL.", ex);
+            return -1;
         }
     }
 
-    public void updateRecord(String todoId, String text, String status) {
+    public void updateRecord(long todoId, String text, String status) {
         try {
-            db.execSQL( "update " + TABLE_NAME + "set " + TODO_TEXT + " = " + text + " and "
-                    + TODO_STATUS + " = " + status
-                    + " where " + TODO_ID + " = " + todoId);
+            ContentValues cv = new ContentValues();
+            cv.put(TODO_TEXT, text);
+            cv.put(TODO_STATUS, status);
+            db.update(TABLE_NAME, cv, TODO_ID+ " = ?",new String[]{Long.toString(todoId)});
+//            db.execSQL( "update " + TABLE_NAME + "set " + TODO_TEXT + " = " + text + " and "
+//                    + TODO_STATUS + " = " + status
+//                    + " where " + TODO_ID + " = " + todoId);
+//            Log.d(TAG, "HEY!!!!! id, text, status " + todoId + " " +  text + " " + status);
         } catch(Exception ex) {
             Log.e(TAG, "Exception in executing insert SQL.", ex);
         }
     }
 
-    public void deleteRecord(String todoId) {
+    public void deleteRecord(long todoId) {
         try {
             db.execSQL( "delete from " + TABLE_NAME + "where " + TODO_ID + " = " + todoId);
         } catch(Exception ex) {
@@ -142,13 +154,15 @@ public class TodoDatabase {
         ArrayList<Todo> result = new ArrayList<Todo>();
 
         try {
-            Cursor cursor = db.rawQuery("select TEXT, STATUS from " + TABLE_NAME, null);
+            Cursor cursor = db.rawQuery("select _ID, TEXT, STATUS from " + TABLE_NAME, null);
             for (int i = 0; i < cursor.getCount(); i++) {
                 cursor.moveToNext();
-                String text = cursor.getString(0);
-                String status = cursor.getString(1);
+                long id = cursor.getLong(0);
+                String text = cursor.getString(1);
+                String status = cursor.getString(2);
 
-                Todo info = new Todo(text, status);
+//                Log.d(TAG, "HEY!!!!! id, text, status " + id + " " +  text + " " + status);
+                Todo info = new Todo(id, text, status);
                 result.add(info);
             }
 

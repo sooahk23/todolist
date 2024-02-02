@@ -1,10 +1,12 @@
 package com.example.mytodolist;
 
+import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -12,10 +14,30 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
-public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder>  implements OnTodoItemClickListener {
+public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
+
+    public interface OnTodoItemLongClickListener {
+        public void onItemLongClick(TodoAdapter.ViewHolder holder, View view, int position) ;
+    }
+
+    public interface OnTodoCheckClickListener {
+        public void onCheckClick(TodoAdapter.ViewHolder holder, View view, int position) ;
+    }
+
+    public interface OnTodoTextClickListener {
+        public void onTextClick(TodoAdapter.ViewHolder holder, View view, int position) ;
+    }
+
+    public interface OnTodoOutClickListener {
+        public void onOutClick(TodoAdapter.ViewHolder holder, View view, int position) ;
+    }
 
     ArrayList<Todo> items = new ArrayList<Todo>();
-    OnTodoItemClickListener listener;
+    OnTodoItemLongClickListener longListener;
+    OnTodoCheckClickListener checkListener;
+    OnTodoTextClickListener textListener;
+
+    OnTodoOutClickListener outListener;
 
     @NonNull
     @Override
@@ -23,7 +45,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder>  i
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View itemView = inflater.inflate(R.layout.todolist_item, parent, false);
 
-        return new ViewHolder(itemView, this);
+        return new ViewHolder(itemView, longListener, checkListener, textListener, outListener);
     }
 
     @Override
@@ -53,50 +75,100 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder>  i
         items.set(position, item);
     }
 
-    public void setOnItemClickListener(OnTodoItemClickListener listener){
-        this.listener = listener;
+    public void setOnItemClickListener(OnTodoItemLongClickListener listener){
+        this.longListener = listener;
     }
 
-    @Override
-    public void onItemClick(ViewHolder holder, View view, int position) {
-        if (listener !=  null) {
-            listener.onItemClick(holder, view, position);
-        }
+    public void setOnCheckClickListener(OnTodoCheckClickListener listener){
+        this.checkListener = listener;
     }
+    public void setOnTextClickListener(OnTodoTextClickListener listener){
+        this.textListener = listener;
+    }
+    public void setOnOutClickListener(OnTodoOutClickListener listener){
+        this.outListener = listener;
+    }
+
+//    @Override
+//    public void onItemClick(ViewHolder holder, View view, int position) {
+//        if (listener !=  null) {
+//            listener.onItemClick(holder, view, position);
+//        }
+//    }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        EditText todoText;
+        TextView todoText;
+        EditText todoEdit;
         ImageView todoStatus;
-        public ViewHolder(View itemView, final OnTodoItemClickListener listener) {
+        LinearLayout todoParent;
+        public ViewHolder(View itemView, final OnTodoItemLongClickListener longListener,
+                          final OnTodoCheckClickListener checkListener,
+                          final OnTodoTextClickListener textListener,
+                          final OnTodoOutClickListener outListener) {
             super(itemView);
 
             todoText = itemView.findViewById(R.id.todoText);
+            todoEdit = itemView.findViewById(R.id.todoEdit);
             todoStatus = itemView.findViewById(R.id.todoStatus);
-            itemView.setOnClickListener(new View.OnClickListener(){
+            todoParent = itemView.findViewById(R.id.todoParent);
+
+            todoEdit.setVisibility(View.GONE);
+            todoStatus.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View view){
+                public void onClick(View view) {
                     int position = getAdapterPosition();
 
-                    if (listener != null) {
-                        listener.onItemClick(ViewHolder.this, view, position);
+                    if (checkListener != null) {
+                        checkListener.onCheckClick(ViewHolder.this, view, position);
                     }
+                }
+            });
+            todoText.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int position = getAdapterPosition();
+                    if (textListener != null) {
+                        textListener.onTextClick(ViewHolder.this, view, position);
+                    }
+                }
+            });
+
+            todoParent.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int position = getAdapterPosition();
+                    if (outListener != null ) {
+                        outListener.onOutClick(ViewHolder.this, view, position);
+                    }
+                }
+            });
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view){
+                    int position = getAdapterPosition();
+
+                    if (longListener != null) {
+                        longListener.onItemLongClick(ViewHolder.this, view, position);
+                    }
+                    return true;
                 }
             });
         }
 
         public void setItem(Todo item){
             todoText.setText(item.getText());
-            String notStatus = item.getStatus();
-//            todoStatus.setImageIcon();
-//            switch (notStatus) {
-//                case "NOT_STARTED":
-//                    todoStatus.setImageResource(R.drawable.status_not_started);
-//                    break;
-//                case "DONE":
-//                    todoStatus.setImageResource(R.drawable.status_done);
-//                    break;
-//
-//            }
+            String nowStatus = item.getStatus();
+            switch (nowStatus) {
+                case "NOT_STARTED":
+                    todoStatus.setImageResource(R.drawable.status_not_started);
+                    todoText.setPaintFlags(todoText.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+                    break;
+                case "DONE":
+                    todoStatus.setImageResource(R.drawable.status_done);
+                    todoText.setPaintFlags(todoText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                    break;
+
+            }
         }
     }
 }
