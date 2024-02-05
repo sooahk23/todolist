@@ -4,7 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Activity;
 import android.content.ContentValues;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Paint;
 import android.net.Uri;
@@ -26,6 +28,15 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     TodoDatabase database;
 
+    SharedPreferences pref;
+    SharedPreferences.Editor editor;
+
+
+    private void setPref() {
+        pref = getSharedPreferences(getString(R.string.preference_file_key), Activity.MODE_PRIVATE);
+        editor = pref.edit();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,6 +56,9 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Todo database is not opened.");
         }
 
+//        setPref();
+
+
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
@@ -60,19 +74,28 @@ public class MainActivity extends AppCompatActivity {
         adapter.setItems(result);
 
         // 추가 버튼 클릭시
-        // Input 입력 되고 텍스트 초기화
-        // DB에 추가
         EditText editText = findViewById(R.id.editText);
         Button addBtn = findViewById(R.id.addBtn);
+        Button addImgBtn = findViewById(R.id.addImgBtn);
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                long itemId = database.insertRecord(editText.getText().toString(), "NOT_STARTED");
-                Todo newItem = new Todo(itemId, editText.getText().toString(), "NOT_STARTED");
-//                Log.d(TAG, "printing item.." + newItem.id+ newItem.text + newItem.status);
-                adapter.addItem(newItem);
+//                long itemId = database.insertRecord(editText.getText().toString(), "NOT_STARTED");
+
+                TodoText newTodoText = new TodoText(editText.getText().toString(), Status.NOT_STARTED);
+                Todo newTodo = new Todo(0, ViewType.TEXT, newTodoText);
+                adapter.addItem(newTodo);
                 adapter.notifyDataSetChanged();
                 editText.setText("");
+            }
+        });
+
+        addImgBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Todo newTodo = new Todo(1, ViewType.IMAGE, null);
+                adapter.addItem(newTodo);
+                adapter.notifyDataSetChanged();
             }
         });
     }

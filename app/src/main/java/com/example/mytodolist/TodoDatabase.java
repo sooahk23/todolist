@@ -162,8 +162,8 @@ public class TodoDatabase {
                 String status = cursor.getString(2);
 
 //                Log.d(TAG, "HEY!!!!! id, text, status " + id + " " +  text + " " + status);
-                Todo info = new Todo(id, text, status);
-                result.add(info);
+//                Todo info = new Todo(id, text, status);
+//                result.add(info);
             }
 
         } catch(Exception ex) {

@@ -3,16 +3,13 @@ package com.example.mytodolist;
 import android.graphics.Paint;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -39,28 +36,32 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
         @Override
         public void onCheckClick(ViewHolder holder, View view, int position) {
             Todo item = getItem(position);
-            switch (item.status) {
-                case "NOT_STARTED":
-                    item.status = "DONE";
-                    break;
-                case "DONE":
-                    item.status = "NOT_STARTED";
-                    break;
-            }
-            setItem(position, item);
-            notifyDataSetChanged();
+            if (item.getViewType() == ViewType.TEXT){
+                TodoText todotext = (TodoText) item.object;
+                switch (todotext.status) {
+                    case NOT_STARTED:
+                        todotext.status = Status.DONE;
+                        break;
+                    case DONE:
+                        todotext.status = Status.NOT_STARTED;
+                        break;
+                }
+                setItem(position, item);
+                notifyDataSetChanged();
 //            database.updateRecord(item.getId(), item.text, item.status);
+            }
         }
 
         @Override
         public void onTextClick(ViewHolder holder, View view, int position) {
             Todo item = getItem(position);
-            if (item.status.equals("DONE")) {
+            TodoText todotext = (TodoText) item.object;
+            if (todotext.status == Status.DONE) {
                 return;
             }
             // EditText로 변경
             holder.todoText.setVisibility(View.GONE);
-            holder.todoEdit.setText(item.text);
+            holder.todoEdit.setText(todotext.text);
             holder.todoEdit.setVisibility(View.VISIBLE);
 //                holder.todoStatus.setClickable(false);
 
@@ -73,7 +74,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
                 }
                 @Override
                 public void afterTextChanged(Editable s) {
-                    item.text = s.toString();
+                    todotext.text = s.toString();
                     setItem(position, item);
                     notifyDataSetChanged();
 //                    database.updateRecord(item.getId(), item.text, item.status);
@@ -97,7 +98,6 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
 
         @Override
         public void onOutClick(ViewHolder holder, View view, int position) {
-            Log.d(TAG, "here4");
 //            InputMethodManager manager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 //            manager.hideSoftInputFromWindow(holder.todoEdit.getWindowToken(), 0);
             String str = holder.todoEdit.getText().toString().isEmpty() ? "" : holder.todoEdit.getText().toString();
@@ -108,12 +108,27 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
         }
     };
 
+    @Override
+    public int getItemViewType(int position) {
+        Todo item = items.get(position);
+        return item.getViewType().getValue();
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View itemView = inflater.inflate(R.layout.todolist_item, parent, false);
+        View itemView;
+        int text_val = ViewType.TEXT.getValue();
+        int img_val = ViewType.IMAGE.getValue();
 
+        if(viewType == ViewType.TEXT.getValue()){
+            itemView = inflater.inflate(R.layout.todotext_item, parent, false);
+        }else if (viewType == ViewType.IMAGE.getValue()){
+            itemView = inflater.inflate(R.layout.todoimg_item, parent, false);
+        }else {
+            itemView = inflater.inflate(R.layout.todoimg_item, parent, false);
+        }
         return new ViewHolder(itemView, listener);
     }
 
@@ -152,6 +167,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
         LinearLayout todoParent;
         public ViewHolder(View itemView, final OnTodoItemClickListener listener) {
             super(itemView);
+
 
             todoText = itemView.findViewById(R.id.todoText);
             todoEdit = itemView.findViewById(R.id.todoEdit);
@@ -202,16 +218,23 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
         }
 
         public void setItem(Todo item){
-            todoText.setText(item.getText());
-            String nowStatus = item.getStatus();
-            switch (nowStatus) {
-                case "NOT_STARTED":
-                    todoStatus.setImageResource(R.drawable.status_not_started);
-                    todoText.setPaintFlags(todoText.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+            switch (item.getViewType()) {
+                case TEXT:
+                    TodoText todotextItem = (TodoText) item.object;
+                    todoText.setText(todotextItem.getText());
+                    Status nowStatus = todotextItem.getStatus();
+                    switch (nowStatus) {
+                        case NOT_STARTED:
+                            todoStatus.setImageResource(R.drawable.status_not_started);
+                            todoText.setPaintFlags(todoText.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+                            break;
+                        case DONE:
+                            todoStatus.setImageResource(R.drawable.status_done);
+                            todoText.setPaintFlags(todoText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                            break;
+                    }
                     break;
-                case "DONE":
-                    todoStatus.setImageResource(R.drawable.status_done);
-                    todoText.setPaintFlags(todoText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                case IMAGE:
                     break;
 
             }

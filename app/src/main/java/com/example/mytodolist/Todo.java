@@ -1,15 +1,29 @@
 package com.example.mytodolist;
 
-enum Status{DONE, DOING, NOT_STARTED}
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+enum ViewType {TEXT(0), IMAGE(1);
+    private final int value;
+    ViewType(int value) {
+        this.value= value;
+    }
+    public final int getValue() {
+        return value;
+    }
+}
+
 public class Todo {
     long id;
-    String text;
-    String status;
+    ViewType viewType;
 
-    public Todo(long id, String text, String status) {
+    @Nullable
+    Object object;
+
+    public Todo(long id, ViewType viewType, Object object) {
         this.id = id;
-        this.text = text;
-        this.status = status;
+        this.viewType = viewType;
+        this.object = object;
     }
 
     public long getId() {
@@ -20,19 +34,19 @@ public class Todo {
         this.id = id;
     }
 
-    public String getText() {
-        return text;
+    public ViewType getViewType() {
+        return viewType;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setViewType(ViewType viewType) {
+        this.viewType = viewType;
     }
 
-    public String getStatus() {
-        return status;
+    public Object getObject() {
+        return object;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setObject(Object object) {
+        this.object = object;
     }
 }
