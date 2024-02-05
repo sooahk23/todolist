@@ -1,13 +1,18 @@
 package com.example.mytodolist;
 
 import android.graphics.Paint;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,29 +20,93 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 
 public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
-
-    public interface OnTodoItemLongClickListener {
+    String TAG = "TodoAdapter";
+    public interface OnTodoItemClickListener {
         public void onItemLongClick(TodoAdapter.ViewHolder holder, View view, int position) ;
-    }
-
-    public interface OnTodoCheckClickListener {
         public void onCheckClick(TodoAdapter.ViewHolder holder, View view, int position) ;
-    }
-
-    public interface OnTodoTextClickListener {
         public void onTextClick(TodoAdapter.ViewHolder holder, View view, int position) ;
-    }
-
-    public interface OnTodoOutClickListener {
         public void onOutClick(TodoAdapter.ViewHolder holder, View view, int position) ;
     }
 
     ArrayList<Todo> items = new ArrayList<Todo>();
-    OnTodoItemLongClickListener longListener;
-    OnTodoCheckClickListener checkListener;
-    OnTodoTextClickListener textListener;
+    OnTodoItemClickListener listener = new OnTodoItemClickListener() {
+        @Override
+        public void onItemLongClick(ViewHolder holder, View view, int position) {
+            //TODO: 삭제하기 팝업 띄우기
+        }
 
-    OnTodoOutClickListener outListener;
+        // 아이콘 클릭시 상태 변경
+        @Override
+        public void onCheckClick(ViewHolder holder, View view, int position) {
+            Todo item = getItem(position);
+            switch (item.status) {
+                case "NOT_STARTED":
+                    item.status = "DONE";
+                    break;
+                case "DONE":
+                    item.status = "NOT_STARTED";
+                    break;
+            }
+            setItem(position, item);
+            notifyDataSetChanged();
+//            database.updateRecord(item.getId(), item.text, item.status);
+        }
+
+        @Override
+        public void onTextClick(ViewHolder holder, View view, int position) {
+            Todo item = getItem(position);
+            if (item.status.equals("DONE")) {
+                return;
+            }
+            // EditText로 변경
+            holder.todoText.setVisibility(View.GONE);
+            holder.todoEdit.setText(item.text);
+            holder.todoEdit.setVisibility(View.VISIBLE);
+//                holder.todoStatus.setClickable(false);
+
+            holder.todoEdit.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
+                @Override
+                public void afterTextChanged(Editable s) {
+                    item.text = s.toString();
+                    setItem(position, item);
+                    notifyDataSetChanged();
+//                    database.updateRecord(item.getId(), item.text, item.status);
+                }
+            });
+
+//                holder.todoParent.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        Log.d(TAG, "here4");
+//                        InputMethodManager manager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+//                        manager.hideSoftInputFromWindow(holder.todoEdit.getWindowToken(), 0);
+//                        String str = holder.todoEdit.getText().toString().isEmpty() ? "" : holder.todoEdit.getText().toString();
+//                        holder.todoText.setVisibility(View.VISIBLE);
+//                        holder.todoText.setText(str);
+//                        holder.todoEdit.setVisibility(View.GONE);
+//                    }
+//                });
+
+        }
+
+        @Override
+        public void onOutClick(ViewHolder holder, View view, int position) {
+            Log.d(TAG, "here4");
+//            InputMethodManager manager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+//            manager.hideSoftInputFromWindow(holder.todoEdit.getWindowToken(), 0);
+            String str = holder.todoEdit.getText().toString().isEmpty() ? "" : holder.todoEdit.getText().toString();
+            holder.todoText.setVisibility(View.VISIBLE);
+            holder.todoText.setText(str);
+            holder.todoEdit.setVisibility(View.GONE);
+
+        }
+    };
 
     @NonNull
     @Override
@@ -45,7 +114,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View itemView = inflater.inflate(R.layout.todolist_item, parent, false);
 
-        return new ViewHolder(itemView, longListener, checkListener, textListener, outListener);
+        return new ViewHolder(itemView, listener);
     }
 
     @Override
@@ -75,36 +144,13 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
         items.set(position, item);
     }
 
-    public void setOnItemClickListener(OnTodoItemLongClickListener listener){
-        this.longListener = listener;
-    }
-
-    public void setOnCheckClickListener(OnTodoCheckClickListener listener){
-        this.checkListener = listener;
-    }
-    public void setOnTextClickListener(OnTodoTextClickListener listener){
-        this.textListener = listener;
-    }
-    public void setOnOutClickListener(OnTodoOutClickListener listener){
-        this.outListener = listener;
-    }
-
-//    @Override
-//    public void onItemClick(ViewHolder holder, View view, int position) {
-//        if (listener !=  null) {
-//            listener.onItemClick(holder, view, position);
-//        }
-//    }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView todoText;
         EditText todoEdit;
         ImageView todoStatus;
         LinearLayout todoParent;
-        public ViewHolder(View itemView, final OnTodoItemLongClickListener longListener,
-                          final OnTodoCheckClickListener checkListener,
-                          final OnTodoTextClickListener textListener,
-                          final OnTodoOutClickListener outListener) {
+        public ViewHolder(View itemView, final OnTodoItemClickListener listener) {
             super(itemView);
 
             todoText = itemView.findViewById(R.id.todoText);
@@ -118,8 +164,8 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
                 public void onClick(View view) {
                     int position = getAdapterPosition();
 
-                    if (checkListener != null) {
-                        checkListener.onCheckClick(ViewHolder.this, view, position);
+                    if (listener != null) {
+                        listener.onCheckClick(ViewHolder.this, view, position);
                     }
                 }
             });
@@ -127,8 +173,8 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
                 @Override
                 public void onClick(View view) {
                     int position = getAdapterPosition();
-                    if (textListener != null) {
-                        textListener.onTextClick(ViewHolder.this, view, position);
+                    if (listener != null) {
+                        listener.onTextClick(ViewHolder.this, view, position);
                     }
                 }
             });
@@ -137,8 +183,8 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
                 @Override
                 public void onClick(View view) {
                     int position = getAdapterPosition();
-                    if (outListener != null ) {
-                        outListener.onOutClick(ViewHolder.this, view, position);
+                    if (listener != null ) {
+                        listener.onOutClick(ViewHolder.this, view, position);
                     }
                 }
             });
@@ -147,8 +193,8 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
                 public boolean onLongClick(View view){
                     int position = getAdapterPosition();
 
-                    if (longListener != null) {
-                        longListener.onItemLongClick(ViewHolder.this, view, position);
+                    if (listener != null) {
+                        listener.onItemLongClick(ViewHolder.this, view, position);
                     }
                     return true;
                 }
