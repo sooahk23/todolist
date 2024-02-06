@@ -13,6 +13,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 import java.lang.reflect.Type;
@@ -29,6 +30,7 @@ public class PrefHelper {
         this.editor = pref.edit();
         this.gson = new GsonBuilder()
                 .registerTypeAdapter(Todo.class, new TodoDeserializer())
+                .registerTypeAdapter(Todo.class, new TodoSerializer())
                 .setPrettyPrinting()
                 .create();
     }
@@ -54,26 +56,22 @@ public class PrefHelper {
         }
     }
 
-//    class TodoSerializer implements JsonSerializer<Todo> {
-//        @Override
-//        public Todo serialize(JsonElement json, Type typeOfT,
-//                                JsonDeserializationContext context)
-//                throws JsonParseException {
-//            JsonObject jsonObject = json.getAsJsonObject();
-//            JsonElement viewType = jsonObject.get("viewType");
-//            if (viewType != null) {
-//                switch (viewType.getAsString()) {
-//                    case "TEXT":
-//                        return context.deserialize(jsonObject,
-//                                TodoText.class);
-//                    case "IMAGE":
-//                        return context.deserialize(jsonObject,
-//                                TodoImage.class);
-//                }
-//            }
-//            return null;
-//        }
-//    }
+    class TodoSerializer implements JsonSerializer<Todo> {
+        @Override
+        public JsonElement serialize(Todo todoItem, Type typeOfT,
+                                JsonSerializationContext context)
+                throws JsonParseException {
+            switch (todoItem.getViewType()) {
+                case TEXT:
+                    return context.serialize(todoItem,
+                            TodoText.class);
+                case IMAGE:
+                    return context.serialize(todoItem,
+                            TodoImage.class);
+            }
+            return null;
+        }
+    }
 
     public int getNextId() {
         return todoList.id_count+1;
