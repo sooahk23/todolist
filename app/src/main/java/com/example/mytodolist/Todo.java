@@ -14,23 +14,19 @@ enum ViewType {TEXT(0), IMAGE(1);
 }
 
 public class Todo {
-    long id;
+    int id;
     ViewType viewType;
 
-    @Nullable
-    Object object;
-
-    public Todo(long id, ViewType viewType, Object object) {
+    public Todo(int id, ViewType viewType) {
         this.id = id;
         this.viewType = viewType;
-        this.object = object;
     }
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -42,11 +38,5 @@ public class Todo {
         this.viewType = viewType;
     }
 
-    public Object getObject() {
-        return object;
-    }
 
-    public void setObject(Object object) {
-        this.object = object;
-    }
 }

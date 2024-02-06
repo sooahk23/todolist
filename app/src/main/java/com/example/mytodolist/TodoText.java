@@ -1,11 +1,12 @@
 package com.example.mytodolist;
 
 enum Status{NOT_STARTED, DONE}
-public class TodoText {
+public class TodoText extends Todo {
     String text;
     Status status;
 
-    public TodoText(String text, Status status) {
+    public TodoText(int id, ViewType viewType, String text, Status status) {
+        super(id, viewType);
         this.text = text;
         this.status = status;
     }

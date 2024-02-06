@@ -6,6 +6,11 @@ public class TodoList {
     int id_count;
     ArrayList<Todo> items;
 
+    public TodoList() {
+        id_count = 0;
+        items = new ArrayList<Todo>();
+    }
+
     public int getId_count() {
         return id_count;
     }

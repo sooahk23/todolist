@@ -1,8 +1,10 @@
 package com.example.mytodolist;
 
+import android.content.SharedPreferences;
 import android.graphics.Paint;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +15,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 
@@ -26,6 +30,12 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
     }
 
     ArrayList<Todo> items = new ArrayList<Todo>();
+    PrefHelper prefHelper;
+
+    public TodoAdapter(PrefHelper prefHelper) {
+        this.prefHelper = prefHelper;
+    }
+
     OnTodoItemClickListener listener = new OnTodoItemClickListener() {
         @Override
         public void onItemLongClick(ViewHolder holder, View view, int position) {
@@ -37,7 +47,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
         public void onCheckClick(ViewHolder holder, View view, int position) {
             Todo item = getItem(position);
             if (item.getViewType() == ViewType.TEXT){
-                TodoText todotext = (TodoText) item.object;
+                TodoText todotext = (TodoText) item;
                 switch (todotext.status) {
                     case NOT_STARTED:
                         todotext.status = Status.DONE;
@@ -48,14 +58,15 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
                 }
                 setItem(position, item);
                 notifyDataSetChanged();
-//            database.updateRecord(item.getId(), item.text, item.status);
+//                database.updateRecord(item.getId(), item.text, item.status);
+                prefHelper.updatePref(item);
             }
         }
 
         @Override
         public void onTextClick(ViewHolder holder, View view, int position) {
             Todo item = getItem(position);
-            TodoText todotext = (TodoText) item.object;
+            TodoText todotext = (TodoText) item;
             if (todotext.status == Status.DONE) {
                 return;
             }
@@ -77,6 +88,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
                     todotext.text = s.toString();
                     setItem(position, item);
                     notifyDataSetChanged();
+                    prefHelper.updatePref(item);
 //                    database.updateRecord(item.getId(), item.text, item.status);
                 }
             });
@@ -135,7 +147,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Todo item = items.get(position);
-        holder.setItem(item);
+        holder.setItem(item, listener);
     }
 
     @Override
@@ -168,42 +180,6 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
         public ViewHolder(View itemView, final OnTodoItemClickListener listener) {
             super(itemView);
 
-
-            todoText = itemView.findViewById(R.id.todoText);
-            todoEdit = itemView.findViewById(R.id.todoEdit);
-            todoStatus = itemView.findViewById(R.id.todoStatus);
-            todoParent = itemView.findViewById(R.id.todoParent);
-
-            todoEdit.setVisibility(View.GONE);
-            todoStatus.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    int position = getAdapterPosition();
-
-                    if (listener != null) {
-                        listener.onCheckClick(ViewHolder.this, view, position);
-                    }
-                }
-            });
-            todoText.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    int position = getAdapterPosition();
-                    if (listener != null) {
-                        listener.onTextClick(ViewHolder.this, view, position);
-                    }
-                }
-            });
-
-            todoParent.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    int position = getAdapterPosition();
-                    if (listener != null ) {
-                        listener.onOutClick(ViewHolder.this, view, position);
-                    }
-                }
-            });
             itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view){
@@ -217,12 +193,52 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
             });
         }
 
-        public void setItem(Todo item){
+        public void setItem(Todo item, final OnTodoItemClickListener listener){
             switch (item.getViewType()) {
                 case TEXT:
-                    TodoText todotextItem = (TodoText) item.object;
+                    if(this.getItemViewType() == ViewType.TEXT.getValue()){
+                        todoText = itemView.findViewById(R.id.todoText);
+                        todoEdit = itemView.findViewById(R.id.todoEdit);
+                        todoStatus = itemView.findViewById(R.id.todoStatus);
+                        todoParent = itemView.findViewById(R.id.todoParent);
+
+                        todoEdit.setVisibility(View.GONE);
+                        todoStatus.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                int position = getAdapterPosition();
+
+                                if (listener != null) {
+                                    listener.onCheckClick(ViewHolder.this, view, position);
+                                }
+                            }
+                        });
+                        todoText.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                int position = getAdapterPosition();
+                                if (listener != null) {
+                                    listener.onTextClick(ViewHolder.this, view, position);
+                                }
+                            }
+                        });
+
+                        todoParent.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                int position = getAdapterPosition();
+                                if (listener != null ) {
+                                    listener.onOutClick(ViewHolder.this, view, position);
+                                }
+                            }
+                        });
+                    }
+
+                    TodoText todotextItem = (TodoText) item;
+                    Log.d("Adapterrrrr", String.valueOf(todotextItem.getId()));
                     todoText.setText(todotextItem.getText());
                     Status nowStatus = todotextItem.getStatus();
+
                     switch (nowStatus) {
                         case NOT_STARTED:
                             todoStatus.setImageResource(R.drawable.status_not_started);

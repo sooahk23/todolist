@@ -22,57 +22,60 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     TodoDatabase database;
-
     SharedPreferences pref;
-    SharedPreferences.Editor editor;
-
-
-    private void setPref() {
-        pref = getSharedPreferences(getString(R.string.preference_file_key), Activity.MODE_PRIVATE);
-        editor = pref.edit();
-    }
+    PrefHelper prefHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Open Database
-        if (database != null) {
-            database.close();
-            database = null;
-        }
+//        // Open Database
+//        if (database != null) {
+//            database.close();
+//            database = null;
+//        }
+//
+//        database = TodoDatabase.getInstance(this);
+//        boolean isOpen = database.open();
+//        if (isOpen) {
+//            Log.d(TAG, "Todo database is opened.");
+//        } else {
+//            Log.d(TAG, "Todo database is not opened.");
+//        }
 
-        database = TodoDatabase.getInstance(this);
-        boolean isOpen = database.open();
-        if (isOpen) {
-            Log.d(TAG, "Todo database is opened.");
-        } else {
-            Log.d(TAG, "Todo database is not opened.");
-        }
-
-//        setPref();
-
+        pref = getSharedPreferences(getString(R.string.preference_file_key), Activity.MODE_PRIVATE);
+        prefHelper = new PrefHelper(pref);
+        TodoList todolist = prefHelper.selectAllPref();
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
-        TodoAdapter adapter = new TodoAdapter();
+        TodoAdapter adapter = new TodoAdapter(prefHelper);
 
-//        adapter.addItem(new Todo("간단한 TODO 리스트", "NOT_STARTED"));
-//        adapter.addItem(new Todo("3가지 상태로 체크", "NOT_STARTED"));
-//        adapter.addItem(new Todo("쉽게 활용해요!", "NOT_STARTED"));
         recyclerView.setAdapter(adapter);
 
         // 저장된 투두리스트 불러오기
-        ArrayList<Todo> result = database.selectAll();
-        adapter.setItems(result);
+//        ArrayList<Todo> result = database.selectAll();
+        Log.d(TAG, todolist.toString());
+        if (todolist == null) {
+            adapter.setItems(new ArrayList<Todo>());
+        }else {
+            adapter.setItems(todolist.items);
+        }
+        setListeners(adapter);
 
+    }
+
+
+    private void setListeners(TodoAdapter adapter) {
         // 추가 버튼 클릭시
         EditText editText = findViewById(R.id.editText);
         Button addBtn = findViewById(R.id.addBtn);
@@ -81,10 +84,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 //                long itemId = database.insertRecord(editText.getText().toString(), "NOT_STARTED");
-
-                TodoText newTodoText = new TodoText(editText.getText().toString(), Status.NOT_STARTED);
-                Todo newTodo = new Todo(0, ViewType.TEXT, newTodoText);
-                adapter.addItem(newTodo);
+                TodoText newTodoText = new TodoText(prefHelper.getNextId(), ViewType.TEXT,
+                        editText.getText().toString(), Status.NOT_STARTED);
+                prefHelper.insertPref(newTodoText);
+//                adapter.addItem(newTodo);
                 adapter.notifyDataSetChanged();
                 editText.setText("");
             }
@@ -93,8 +96,9 @@ public class MainActivity extends AppCompatActivity {
         addImgBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Todo newTodo = new Todo(1, ViewType.IMAGE, null);
-                adapter.addItem(newTodo);
+                TodoImage newTodoImage = new TodoImage(prefHelper.getNextId(), ViewType.IMAGE);
+                prefHelper.insertPref(newTodoImage);
+//                adapter.addItem(newTodo);
                 adapter.notifyDataSetChanged();
             }
         });
