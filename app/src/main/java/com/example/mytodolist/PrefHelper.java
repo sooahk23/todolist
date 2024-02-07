@@ -83,7 +83,6 @@ public class PrefHelper {
         todoList.id_count = newItem.getId();
         todoList.items = items;
         String prefTodolist = gson.toJson(todoList);
-        Log.d("PrefHelper adding", prefTodolist);
         editor.putString("todo", prefTodolist);
         editor.apply();
         return newItem;
@@ -111,7 +110,6 @@ public class PrefHelper {
             todoList = new TodoList();
         } else {
             todoList = gson.fromJson(prefTodolist, TodoList.class);
-            Log.d("here!!!!!!", todoList.toString());
         }
         return todoList;
     }

@@ -1,5 +1,8 @@
 package com.example.mytodolist;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Paint;
 import android.text.Editable;
@@ -14,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.JsonObject;
@@ -32,14 +36,35 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
     ArrayList<Todo> items = new ArrayList<Todo>();
     PrefHelper prefHelper;
 
-    public TodoAdapter(PrefHelper prefHelper) {
+    Activity activity;
+
+    public TodoAdapter(PrefHelper prefHelper, Activity activity) {
         this.prefHelper = prefHelper;
+        this.activity = activity;
     }
 
     OnTodoItemClickListener listener = new OnTodoItemClickListener() {
         @Override
         public void onItemLongClick(ViewHolder holder, View view, int position) {
             //TODO: 삭제하기 팝업 띄우기
+            Todo item = getItem(position);
+            AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+            builder.setMessage(R.string.dialog_delete)
+                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // Delete item
+                            prefHelper.deletePref(item);
+                            notifyDataSetChanged();
+
+                        }
+                    })
+                    .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User cancelled the dialog
+                        }
+                    });
+            AlertDialog dialog = builder.create();
+            dialog.show();
         }
 
         // 아이콘 클릭시 상태 변경
@@ -235,7 +260,6 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
                     }
 
                     TodoText todotextItem = (TodoText) item;
-                    Log.d("Adapterrrrr", String.valueOf(todotextItem.getId()));
                     todoText.setText(todotextItem.getText());
                     Status nowStatus = todotextItem.getStatus();
 

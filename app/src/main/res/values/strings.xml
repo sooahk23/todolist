@@ -3,4 +3,7 @@
     <string name="todoHint">할 일을 입력하세요.</string>
     <string name="preference_file_key">pref</string>
     <string name="preference_data_key">todo</string>
+    <string name="dialog_delete">삭제하시겠습니까?</string>
+    <string name="yes">예</string>
+    <string name="cancel">취소</string>
 </resources>

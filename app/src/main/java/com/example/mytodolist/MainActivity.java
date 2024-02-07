@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
-        TodoAdapter adapter = new TodoAdapter(prefHelper);
+        TodoAdapter adapter = new TodoAdapter(prefHelper, this);
 
         recyclerView.setAdapter(adapter);
 
