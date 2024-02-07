@@ -61,6 +61,19 @@ public class MainActivity extends AppCompatActivity {
         TodoAdapter adapter = new TodoAdapter(prefHelper, this);
 
         recyclerView.setAdapter(adapter);
+//        prefHelper.initializePref();
+        for (int i=0; i<100; i++) {
+            if (i%4==0){
+                TodoImage newTodoImage = new TodoImage(prefHelper.getNextId(), ViewType.IMAGE);
+                prefHelper.insertPref(newTodoImage);
+
+            }else {
+                TodoText newTodoText = new TodoText(prefHelper.getNextId(), ViewType.TEXT,
+                        "happy cat...", Status.NOT_STARTED);
+                prefHelper.insertPref(newTodoText);
+            }
+
+        }
 
         // 저장된 투두리스트 불러오기
 //        ArrayList<Todo> result = database.selectAll();

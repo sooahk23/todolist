@@ -113,4 +113,9 @@ public class PrefHelper {
         }
         return todoList;
     }
+
+    public void initializePref(){
+        editor.putString("todo", null);
+        editor.apply();
+    }
 }

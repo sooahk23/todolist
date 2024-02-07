@@ -23,6 +23,7 @@
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             android:textSize="20sp" />
+
         <ImageView
             android:id="@+id/todoStatus"
             android:layout_width="wrap_content"
