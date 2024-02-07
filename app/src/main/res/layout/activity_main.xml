@@ -39,19 +39,22 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_marginTop="10dp"
+            android:layout_marginHorizontal="10dp"
             android:hint="무엇을 할까요?"/>
         <Button
             android:id="@+id/addBtn"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf ="@id/editText"
-            android:layout_weight="1"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="10dp"
             android:text="추가"/>
         <Button
             android:id="@+id/addImgBtn"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"
             android:text="이미지 추가"/>
     </LinearLayout>
 
