@@ -96,11 +96,12 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
                 return;
             }
             // EditText로 변경
-            holder.todoText.setVisibility(View.GONE);
+
             holder.todoEdit.setText(todotext.text);
             holder.todoEdit.setVisibility(View.VISIBLE);
+            holder.todoText.setVisibility(View.GONE);
 //                holder.todoStatus.setClickable(false);
-
+            Log.d("Adapter", "onTextClicked");
             holder.todoEdit.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -114,6 +115,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
                     setItem(position, item);
                     notifyDataSetChanged();
                     prefHelper.updatePref(item);
+                    Log.d("Adapter", "afterText");
 //                    database.updateRecord(item.getId(), item.text, item.status);
                 }
             });
@@ -137,6 +139,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
         public void onOutClick(ViewHolder holder, View view, int position) {
 //            InputMethodManager manager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 //            manager.hideSoftInputFromWindow(holder.todoEdit.getWindowToken(), 0);
+            Log.d("Adapter", "onOutClicked");
             String str = holder.todoEdit.getText().toString().isEmpty() ? "" : holder.todoEdit.getText().toString();
             holder.todoText.setVisibility(View.VISIBLE);
             holder.todoText.setText(str);
