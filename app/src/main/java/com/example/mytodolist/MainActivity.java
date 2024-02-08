@@ -9,11 +9,13 @@ import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -58,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
-        TodoAdapter adapter = new TodoAdapter(prefHelper, this);
+        TodoAdapter adapter = new TodoAdapter(prefHelper);
 
         recyclerView.setAdapter(adapter);
 //        prefHelper.initializePref();
@@ -85,6 +87,23 @@ public class MainActivity extends AppCompatActivity {
         }
         setListeners(adapter);
 
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        View focusView = getCurrentFocus();
+        if (focusView != null) {
+            Rect rect = new Rect();
+            focusView.getGlobalVisibleRect(rect);
+            int x = (int) ev.getX(), y = (int) ev.getY();
+            if (!rect.contains(x, y)) {
+                InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                if (imm != null)
+                    imm.hideSoftInputFromWindow(focusView.getWindowToken(), 0);
+                focusView.clearFocus();
+            }
+        }
+        return super.dispatchTouchEvent(ev);
     }
 
 

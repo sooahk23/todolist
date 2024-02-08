@@ -2,6 +2,7 @@ package com.example.mytodolist;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Paint;
@@ -11,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -38,9 +40,8 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
 
     Activity activity;
 
-    public TodoAdapter(PrefHelper prefHelper, Activity activity) {
+    public TodoAdapter(PrefHelper prefHelper) {
         this.prefHelper = prefHelper;
-        this.activity = activity;
     }
 
     OnTodoItemClickListener listener = new OnTodoItemClickListener() {
@@ -48,14 +49,13 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
         public void onItemLongClick(ViewHolder holder, View view, int position) {
             //TODO: 삭제하기 팝업 띄우기
             Todo item = getItem(position);
-            AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+            AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
             builder.setMessage(R.string.dialog_delete)
                     .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             // Delete item
                             prefHelper.deletePref(item);
                             notifyDataSetChanged();
-
                         }
                     })
                     .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -95,7 +95,6 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
             if (todotext.status == Status.DONE) {
                 return;
             }
-            // EditText로 변경
 
             holder.todoEdit.setText(todotext.text);
             holder.todoEdit.setVisibility(View.VISIBLE);
@@ -113,34 +112,25 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
                 public void afterTextChanged(Editable s) {
                     todotext.text = s.toString();
                     setItem(position, item);
-                    notifyDataSetChanged();
+//                    notifyDataSetChanged();
                     prefHelper.updatePref(item);
                     Log.d("Adapter", "afterText");
 //                    database.updateRecord(item.getId(), item.text, item.status);
                 }
             });
 
-//                holder.todoParent.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        Log.d(TAG, "here4");
-//                        InputMethodManager manager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-//                        manager.hideSoftInputFromWindow(holder.todoEdit.getWindowToken(), 0);
-//                        String str = holder.todoEdit.getText().toString().isEmpty() ? "" : holder.todoEdit.getText().toString();
-//                        holder.todoText.setVisibility(View.VISIBLE);
-//                        holder.todoText.setText(str);
-//                        holder.todoEdit.setVisibility(View.GONE);
-//                    }
-//                });
-
         }
 
         @Override
         public void onOutClick(ViewHolder holder, View view, int position) {
-//            InputMethodManager manager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-//            manager.hideSoftInputFromWindow(holder.todoEdit.getWindowToken(), 0);
-            Log.d("Adapter", "onOutClicked");
-            String str = holder.todoEdit.getText().toString().isEmpty() ? "" : holder.todoEdit.getText().toString();
+            String str = holder.todoEdit.getText().toString().isEmpty() ? holder.todoText.getText().toString()
+                    :holder.todoEdit.getText().toString();
+            InputMethodManager manager = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            manager.hideSoftInputFromWindow(holder.todoEdit.getWindowToken(), 0);
+
+//            String str = holder.todoEdit.getText().toString().isEmpty() ? "" : holder.todoEdit.getText().toString();
+
+//            Log.d("Adapter", "onOutClicked string: " + str + "textView: " + );
             holder.todoText.setVisibility(View.VISIBLE);
             holder.todoText.setText(str);
             holder.todoEdit.setVisibility(View.GONE);
@@ -212,7 +202,6 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
                 @Override
                 public boolean onLongClick(View view){
                     int position = getAdapterPosition();
-
                     if (listener != null) {
                         listener.onItemLongClick(ViewHolder.this, view, position);
                     }
@@ -230,6 +219,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
                         todoStatus = itemView.findViewById(R.id.todoStatus);
                         todoParent = itemView.findViewById(R.id.todoParent);
 
+                        todoText.setVisibility(View.VISIBLE);
                         todoEdit.setVisibility(View.GONE);
                         todoStatus.setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -248,6 +238,17 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
                                 if (listener != null) {
                                     listener.onTextClick(ViewHolder.this, view, position);
                                 }
+                            }
+                        });
+
+                        todoText.setOnLongClickListener(new View.OnLongClickListener() {
+                            @Override
+                            public boolean onLongClick(View view) {
+                                int position = getAdapterPosition();
+                                if (listener != null) {
+                                    listener.onItemLongClick(ViewHolder.this, view, position);
+                                }
+                                return true;
                             }
                         });
 
