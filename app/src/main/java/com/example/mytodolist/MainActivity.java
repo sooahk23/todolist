@@ -3,6 +3,7 @@ package com.example.mytodolist;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.app.Activity;
 import android.content.ContentValues;
@@ -24,71 +25,39 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
-    TodoDatabase database;
-    SharedPreferences pref;
-    PrefHelper prefHelper;
+    private TabLayout tabLayout;
+    private ViewPager2 viewPager;
+    private ViewPagerAdapter adapter;
+
+    // 궁금한 점: ESLint + Prettier 같은 툴이 안드로이드에 있는가?
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        // Open Database
-//        if (database != null) {
-//            database.close();
-//            database = null;
-//        }
-//
-//        database = TodoDatabase.getInstance(this);
-//        boolean isOpen = database.open();
-//        if (isOpen) {
-//            Log.d(TAG, "Todo database is opened.");
-//        } else {
-//            Log.d(TAG, "Todo database is not opened.");
-//        }
+        // For Fragment
+        tabLayout = findViewById(R.id.tabLayout);
+        viewPager = findViewById(R.id.viewPager);
 
-        pref = getSharedPreferences(getString(R.string.preference_file_key), Activity.MODE_PRIVATE);
-        prefHelper = new PrefHelper(pref);
-        TodoList todolist = prefHelper.selectAllPref();
+        adapter = new ViewPagerAdapter(this);
+        viewPager.setAdapter(adapter);
 
-        RecyclerView recyclerView = findViewById(R.id.recyclerView);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        recyclerView.setLayoutManager(layoutManager);
-        TodoAdapter adapter = new TodoAdapter(prefHelper);
-
-        recyclerView.setAdapter(adapter);
-//        prefHelper.initializePref();
-//        for (int i=0; i<40; i++) {
-//            if (i%4==0){
-//                TodoImage newTodoImage = new TodoImage(prefHelper.getNextId(), ViewType.IMAGE);
-//                prefHelper.insertPref(newTodoImage);
-//
-//            }else {
-//                TodoText newTodoText = new TodoText(prefHelper.getNextId(), ViewType.TEXT,
-//                        "happy cat...", Status.NOT_STARTED);
-//                prefHelper.insertPref(newTodoText);
-//            }
-//
-//        }
-
-        // 저장된 투두리스트 불러오기
-//        ArrayList<Todo> result = database.selectAll();
-        Log.d(TAG, todolist.toString());
-        if (todolist == null) {
-            adapter.setItems(new ArrayList<Todo>());
-        }else {
-            adapter.setItems(todolist.items);
-        }
-        setListeners(adapter);
-
+        new TabLayoutMediator(tabLayout, viewPager,
+                (tab, position) -> new ArrayList<String>(Arrays.asList("All", "Text", "Image"))
+        ).attach();
     }
 
+    // 다른 부분 눌렀을 때 키보드 내려가게 하는 코드
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         View focusView = getCurrentFocus();
@@ -104,35 +73,5 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return super.dispatchTouchEvent(ev);
-    }
-
-
-    private void setListeners(TodoAdapter adapter) {
-        // 추가 버튼 클릭시
-        EditText editText = findViewById(R.id.editText);
-        Button addBtn = findViewById(R.id.addBtn);
-        Button addImgBtn = findViewById(R.id.addImgBtn);
-        addBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-//                long itemId = database.insertRecord(editText.getText().toString(), "NOT_STARTED");
-                TodoText newTodoText = new TodoText(prefHelper.getNextId(), ViewType.TEXT,
-                        editText.getText().toString(), Status.NOT_STARTED);
-                prefHelper.insertPref(newTodoText);
-//                adapter.addItem(newTodo);
-                adapter.notifyDataSetChanged();
-                editText.setText("");
-            }
-        });
-
-        addImgBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                TodoImage newTodoImage = new TodoImage(prefHelper.getNextId(), ViewType.IMAGE);
-                prefHelper.insertPref(newTodoImage);
-//                adapter.addItem(newTodo);
-                adapter.notifyDataSetChanged();
-            }
-        });
     }
 }
