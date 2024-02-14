@@ -82,30 +82,40 @@ public class PrefHelper {
         items.add(newItem);
         todoList.id_count = newItem.getId();
         todoList.items = items;
+//        Log.d("dd", todoList.items.toString());
         String prefTodolist = gson.toJson(todoList);
         editor.putString("todo", prefTodolist);
-        editor.apply();
+        editor.commit();
         return newItem;
     }
 
     public void updatePref(Todo newItem){
         ArrayList<Todo> items = todoList.items;
         items.replaceAll(item -> item.id==newItem.getId() ? newItem : item);
+        todoList.items = items;
+//        Log.d("dd", todoList.items.toString());
         String prefTodolist = gson.toJson(todoList);
         editor.putString("todo", prefTodolist);
-        editor.apply();
+        editor.commit();
     }
 
     public void deletePref(Todo item){
         ArrayList<Todo> items = todoList.items;
         items.remove(item);
+        todoList.items = items;
+//        Log.d("dd", todoList.items.toString());
         String prefTodolist = gson.toJson(todoList);
         editor.putString("todo", prefTodolist);
-        editor.apply();
+        editor.commit();
     }
 
     public TodoList selectAllPref(){
         String prefTodolist = pref.getString("todo", null);
+        if (todoList != null){
+//            Log.d("dd", todoList.items.toString());
+            return todoList;
+        }
+
         if (prefTodolist == null){
             todoList = new TodoList();
         } else {
@@ -116,6 +126,6 @@ public class PrefHelper {
 
     public void initializePref(){
         editor.putString("todo", null);
-        editor.apply();
+        editor.commit();
     }
 }

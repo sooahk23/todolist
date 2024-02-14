@@ -2,6 +2,7 @@ package com.example.mytodolist;
 
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,6 +34,8 @@ public class TabFragment extends Fragment {
     Button addBtn;
     Button addImgBtn;
 
+    TodoList todolist;
+
 
     // Factory method to create a new instance of this fragment using the provided parameters.
     // 팩토리 메서드란??
@@ -54,7 +57,7 @@ public class TabFragment extends Fragment {
         // 1. SharedPreferences를 통해 데이터 가져오기
         pref = getContext().getSharedPreferences(getString(R.string.preference_file_key), Activity.MODE_PRIVATE);
         prefHelper = new PrefHelper(pref);
-        TodoList todolist = prefHelper.selectAllPref();
+        todolist = prefHelper.selectAllPref();
 
 //        Log.d(TAG, todolist.toString()); // 투두리스트 비어있는지 등을 확인하기 위한 디버깅 용도
         // 2. 데이터 등록
@@ -65,7 +68,6 @@ public class TabFragment extends Fragment {
         switch (category) {
             case "Fragment 0":
                 view = inflater.inflate(R.layout.todoall_fragment, container, false);
-                //
                 editText = view.findViewById(R.id.editText);
                 addBtn = view.findViewById(R.id.addBtn);
                 addImgBtn = view.findViewById(R.id.addImgBtn);
@@ -145,12 +147,37 @@ public class TabFragment extends Fragment {
         }
     }
 
+
+    //궁금한 점: 데이터 상태 관리를 어떻게 해야 하는가?
+    @Override
+    public void onResume(){
+        super.onResume();
+        String category = getArguments().getString("category", "");
+        todolist = prefHelper.selectAllPref();
+        List<Todo> filteredList;
+        switch (category) {
+            case "Fragment 1":
+                filteredList = todolist.items.stream()
+                        .filter(item -> item.getViewType() == ViewType.TEXT)
+                        .collect(Collectors.toList());
+                adapter.setItems(new ArrayList<>(filteredList));
+                break;
+            case "Fragment 2":
+                filteredList = todolist.items.stream()
+                        .filter(item -> item.getViewType() == ViewType.IMAGE)
+                        .collect(Collectors.toList());
+                adapter.setItems(new ArrayList<>(filteredList));
+                break;
+            default:
+                adapter.setItems(todolist.items);
+                break;
+        }
+    }
+
     // 클릭 이벤트 리스너 모음
     // 1. 텍스트 추가 버튼 클릭
     // 2. 이미지 추가 버튼 클릭
     private void setListeners(String category, View view, TodoAdapter adapter) {
-
-
 
         // 1. 텍스트 추가 버튼 클릭시
         View.OnClickListener textClickListener = new View.OnClickListener() {
@@ -159,7 +186,7 @@ public class TabFragment extends Fragment {
                 TodoText newTodoText = new TodoText(prefHelper.getNextId(), ViewType.TEXT,
                         editText.getText().toString(), Status.NOT_STARTED);
                 prefHelper.insertPref(newTodoText);
-//                adapter.addItem(newTodo); // 왜 이 줄을 추가하면 두 번씩 추가되는지에 대한 분석 필요
+                adapter.addItem(newTodoText); // 왜 이 줄을 추가하면 두 번씩 추가되는지에 대한 분석 필요
                 adapter.notifyDataSetChanged(); // 더 적합한 메소드가 있는지? 경고 뜸
                 editText.setText("");
             }
@@ -171,7 +198,7 @@ public class TabFragment extends Fragment {
             public void onClick(View view) {
                 TodoImage newTodoImage = new TodoImage(prefHelper.getNextId(), ViewType.IMAGE);
                 prefHelper.insertPref(newTodoImage);
-//                adapter.addItem(newTodo); // 왜 이 줄을 추가하면 두 번씩 추가되는지에 대한 분석 필요
+                adapter.addItem(newTodoImage); // 왜 이 줄을 추가하면 두 번씩 추가되는지에 대한 분석 필요
                 adapter.notifyDataSetChanged(); // 더 적합한 메소드가 있는지? 경고 뜸
             }
         };
