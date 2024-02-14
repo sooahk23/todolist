@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class TabFragment extends Fragment {
     private static final String TAG = "TabFragment";
@@ -25,6 +27,12 @@ public class TabFragment extends Fragment {
     LinearLayoutManager layoutManager;
     RecyclerView recyclerView;
     TodoAdapter adapter;
+
+
+    EditText editText;
+    Button addBtn;
+    Button addImgBtn;
+
 
     // Factory method to create a new instance of this fragment using the provided parameters.
     // 팩토리 메서드란??
@@ -49,18 +57,20 @@ public class TabFragment extends Fragment {
         TodoList todolist = prefHelper.selectAllPref();
 
 //        Log.d(TAG, todolist.toString()); // 투두리스트 비어있는지 등을 확인하기 위한 디버깅 용도
-
         // 2. 데이터 등록
         // 단, 데이터가 없을 때는 빈 ArrayList 넣어주어야 오류가 안남
 
-
-        // 2. 데이터 등록
-        // 단, 데이터가 없을 때는 빈 ArrayList 넣어주어야 오류가 안남
         // 3. 화면 반환
         // 궁금한 점: 어떻게 코드 재사용을 줄일 수 있을 것인가? 중복 되는 코드가 보기 안좋음.
         switch (category) {
             case "Fragment 0":
-                recyclerView = container.findViewById(R.id.recyclerViewAllFragment);
+                view = inflater.inflate(R.layout.todoall_fragment, container, false);
+                //
+                editText = view.findViewById(R.id.editText);
+                addBtn = view.findViewById(R.id.addBtn);
+                addImgBtn = view.findViewById(R.id.addImgBtn);
+
+                recyclerView = view.findViewById(R.id.recyclerViewAllFragment);
                 // 궁금한 점: 리사이클러뷰는 리니어 레이아웃으로만 가능한가? 다른 레이아웃은 불가한지
                 layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
                 recyclerView.setLayoutManager(layoutManager);
@@ -70,36 +80,50 @@ public class TabFragment extends Fragment {
                 if (todolist == null) adapter.setItems(new ArrayList<Todo>());
                 else adapter.setItems(todolist.items);
 
-                view = inflater.inflate(R.layout.todoall_fragment, container, false);
                 // 아래 작성된 클릭 이벤트 등록
                 setListeners(category, view, adapter);
 
                 return view;
             case "Fragment 1":
-                recyclerView = container.findViewById(R.id.recyclerViewTextFragment);
+                view = inflater.inflate(R.layout.todotext_fragment, container, false);
+                editText = view.findViewById(R.id.editText);
+                addBtn = view.findViewById(R.id.addBtn);
+
+                recyclerView = view.findViewById(R.id.recyclerViewTextFragment);
                 layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
                 recyclerView.setLayoutManager(layoutManager);
                 adapter = new TodoAdapter(prefHelper);
                 recyclerView.setAdapter(adapter);
 
                 if (todolist == null) adapter.setItems(new ArrayList<Todo>());
-                else adapter.setItems(todolist.items);
+                else{
+                    List<Todo> filteredList = todolist.items.stream()
+                            .filter(item -> item.getViewType() == ViewType.TEXT)
+                            .collect(Collectors.toList());
+                    adapter.setItems(new ArrayList<>(filteredList));
+                }
 
-                view = inflater.inflate(R.layout.todotext_fragment, container, false);
                 setListeners(category, view, adapter);
 
                 return view;
             case "Fragment 2":
-                recyclerView = container.findViewById(R.id.recyclerViewImgFragment);
+                view = inflater.inflate(R.layout.todoimg_fragment, container, false);
+                addImgBtn = view.findViewById(R.id.addImgBtn);
+
+                recyclerView = view.findViewById(R.id.recyclerViewImgFragment);
                 layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
                 recyclerView.setLayoutManager(layoutManager);
                 adapter = new TodoAdapter(prefHelper);
                 recyclerView.setAdapter(adapter);
 
                 if (todolist == null) adapter.setItems(new ArrayList<Todo>());
-                else adapter.setItems(todolist.items);
+                else{
+                    List<Todo> filteredList = todolist.items.stream()
+                            .filter(item -> item.getViewType() == ViewType.IMAGE)
+                            .collect(Collectors.toList());
+                    adapter.setItems(new ArrayList<>(filteredList));
+                }
 
-                view = inflater.inflate(R.layout.todoimg_fragment, container, false);
                 setListeners(category, view, adapter);
 
                 return view;
@@ -107,17 +131,14 @@ public class TabFragment extends Fragment {
                 // Should not come here
                 Log.e("TabFragment: ", "category not exists or not match with tab names");
                 // But anyway, Let's return todoall fragment.
-                recyclerView = container.findViewById(R.id.recyclerViewAllFragment);
+                view = inflater.inflate(R.layout.todoall_fragment, container, false);
+
+                recyclerView = view.findViewById(R.id.recyclerViewAllFragment);
                 layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
                 recyclerView.setLayoutManager(layoutManager);
                 adapter = new TodoAdapter(prefHelper);
                 recyclerView.setAdapter(adapter);
 
-//                int cd = item.getViewType().getValue();
-//                if (todolist == null) adapter.setItems(new ArrayList<Todo>());
-//                else adapter.setItems(todolist.items.stream().filter(item -> item.getViewType().getValue().equals(ViewType.TEXT.getValue())));
-
-                view = inflater.inflate(R.layout.todoall_fragment, container, false);
                 setListeners(category, view, adapter);
 
                 return view;
@@ -128,14 +149,13 @@ public class TabFragment extends Fragment {
     // 1. 텍스트 추가 버튼 클릭
     // 2. 이미지 추가 버튼 클릭
     private void setListeners(String category, View view, TodoAdapter adapter) {
-        Button addBtn;
-        Button addImgBtn;
+
+
 
         // 1. 텍스트 추가 버튼 클릭시
         View.OnClickListener textClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                EditText editText = view.findViewById(R.id.editText);
                 TodoText newTodoText = new TodoText(prefHelper.getNextId(), ViewType.TEXT,
                         editText.getText().toString(), Status.NOT_STARTED);
                 prefHelper.insertPref(newTodoText);
@@ -158,20 +178,13 @@ public class TabFragment extends Fragment {
 
         switch (category) {
             case "Fragment 0":
-                addBtn = view.findViewById(R.id.addBtn);
-                addImgBtn = view.findViewById(R.id.addImgBtn);
-
                 addBtn.setOnClickListener(textClickListener);
                 addImgBtn.setOnClickListener(imgClickListener);
                 break;
             case "Fragment 1":
-                addBtn = view.findViewById(R.id.addBtn);
-
                 addBtn.setOnClickListener(textClickListener);
                 break;
             case "Fragment 2":
-                addImgBtn = view.findViewById(R.id.addImgBtn);
-
                 addImgBtn.setOnClickListener(imgClickListener);
                 break;
             default:

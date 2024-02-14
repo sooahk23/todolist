@@ -31,6 +31,7 @@ import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -52,8 +53,11 @@ public class MainActivity extends AppCompatActivity {
         adapter = new ViewPagerAdapter(this);
         viewPager.setAdapter(adapter);
 
+
         new TabLayoutMediator(tabLayout, viewPager,
-                (tab, position) -> new ArrayList<String>(Arrays.asList("All", "Text", "Image"))
+                (tab, position) ->
+                        tab.setText(new ArrayList<String>(Arrays.asList("All", "Text", "Image"))
+                                .get(position))
         ).attach();
     }
 
